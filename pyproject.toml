@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "wso-register"
+version = "0.1.0"
+description = ""
+authors = ["Daniel Brotsky <dan@clickonetwo.io>"]
+readme = "README.md"
+packages = [{include = "wso_register"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+selenium = "^4.9.1"
+webdriver-manager = "^3.8.6"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
