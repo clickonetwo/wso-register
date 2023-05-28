@@ -1,9 +1,23 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+
+
+@dataclass(kw_only=True)
+class SubmitterData:
+    name: str
+    phone: str
+    email: str = "webadmin@alanonbythebay.org"
+
+    def wso_phone(self) -> (str, str):
+        digits = "".join(filter(str.isdigit, self.phone))
+        if not digits:
+            return "", ""
+        return digits[0:3], digits[3:]
 
 
 @dataclass(kw_only=True)
 class GroupData:
     name: str
+    listing_page: str
 
     # schedule
     day_of_week: int  # Sunday = 0
@@ -27,6 +41,7 @@ class GroupData:
     address_state: str | None = None
     address_zip: str | None = None
     address_country: str | None = None
+    location_instructions: str = ""
 
     # online meetings
     online_location: str | None = None
@@ -34,12 +49,37 @@ class GroupData:
     online_zoom_id: str | None = None
     online_zoom_password: str | None = None
 
-    # contact and attendee information
+    # public information
     language: str | None = None
     public_email: str = ""
     participant_types: set[str] | None = None
     members_only: bool = False
     options: set[str] | None = None
+
+    # CMA information
+    cma_first_name: str = ""
+    cma_last_name: str = ""
+    cma_street_address_1: str = ""
+    cma_street_address_2: str = ""
+    cma_city: str = ""
+    cma_state: str = ""
+    cma_zip: str = ""
+    cma_country: str = ""
+    cma_phone: str = ""
+    cma_email: str = ""
+
+    # GR information
+    gr_first_name: str = ""
+    gr_last_name: str = ""
+    gr_street_address_1: str = ""
+    gr_street_address_2: str = ""
+    gr_city: str = ""
+    gr_state: str = ""
+    gr_zip: str = ""
+    gr_country: str = ""
+    gr_phone: str = ""
+    gr_email: str = ""
+    gr_comment: str = ""
 
     def meeting_type(self) -> str:
         if not self.physical_location:
@@ -134,7 +174,7 @@ class GroupData:
             wso_minute = 30
         else:
             wso_minute = 45
-        return (wso_day, str(wso_hour), str(wso_minute), wso_am_pm)
+        return wso_day, str(wso_hour), str(wso_minute), wso_am_pm
 
     def wso_options(self) -> set[str]:
         if not self.options:
@@ -155,6 +195,62 @@ class GroupData:
                 result.add(wso_option)
         return result
 
-    @classmethod
-    def from_dict(cls, data: dict):
-        return cls(**dict)
+    def wso_location(self) -> str:
+        result_lines: [str] = []
+        if self.physical_location and self.location_instructions:
+            result_lines.append(self.location_instructions)
+        if self.listing_page:
+            result_lines.append(f"See {self.listing_page} for complete information.")
+        return "\n".join(result_lines)
+
+    def has_cma(self) -> bool:
+        return (
+            self.cma_first_name
+            and self.cma_last_name
+            and self.cma_street_address_1
+            and self.cma_city
+            and self.cma_state
+            and self.cma_zip
+            and self.wso_cma_phone()[1]
+            and self.cma_email
+            and True
+        )
+
+    def wso_cma_country(self) -> str:
+        if not self.address_country:
+            return "United States"
+        if self.address_country == "Canada":
+            return "Canada"
+        if self.address_country == "Bermuda":
+            return "Bermuda"
+        return "United States"
+
+    def wso_cma_phone(self) -> (str, str):
+        digits = "".join(filter(str.isdigit, self.cma_phone))
+        return digits[0:3], digits[3:]
+
+    def has_gr(self) -> bool:
+        return (
+            self.gr_first_name
+            and self.gr_last_name
+            and self.gr_street_address_1
+            and self.gr_city
+            and self.gr_state
+            and self.gr_zip
+            and True
+        )
+
+    def wso_gr_country(self) -> str:
+        if not self.address_country:
+            return "United States"
+        if self.address_country == "Canada":
+            return "Canada"
+        if self.address_country == "Bermuda":
+            return "Bermuda"
+        return "United States"
+
+    def wso_gr_phone(self) -> (str, str):
+        digits = "".join(filter(str.isdigit, self.gr_phone))
+        if not digits:
+            return "", ""
+        return digits[0:3], digits[3:]

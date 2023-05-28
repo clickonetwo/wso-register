@@ -1,8 +1,10 @@
-from .group_data import GroupData
+from .wso_data import GroupData, SubmitterData
 from .physical_group import execute_physical_group_change
 
+SUBMITTER_DATA = SubmitterData(name="Dan B (D26 Web Admin)", phone="510-926-0499")
 TUESDAY_GROUP_DATA = GroupData(
     name="Albany-Berkeley Tuesday Night AFG",
+    listing_page="https://al-anonbythebay.org/meeting-berkeley-albany-tuesday-night/",
     wso_id=645,
     day_of_week=2,
     start_hour=20,
@@ -13,4 +15,4 @@ TUESDAY_GROUP_DATA = GroupData(
     public_email="al.anon.group.645@gmail.com",
 )
 
-execute_physical_group_change(TUESDAY_GROUP_DATA)
+execute_physical_group_change(SUBMITTER_DATA, TUESDAY_GROUP_DATA)

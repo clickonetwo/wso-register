@@ -7,8 +7,8 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait as driverWait
 
 from . import RECORDS_ENDPOINT
-from .group_data import GroupData
 from .setup import chrome_session
+from .wso_data import GroupData, SubmitterData
 
 PHYSICAL_GROUP_CHANGE_PATH = (
     "/changes-existing-al-anon-group/group-records-change-form/"
@@ -16,7 +16,7 @@ PHYSICAL_GROUP_CHANGE_PATH = (
 FRAME_FILL_TIMEOUT_SECS = 5.0
 
 
-def execute_physical_group_change(group_data: GroupData):
+def execute_physical_group_change(submitter_data: SubmitterData, group_data: GroupData):
     if not group_data.wso_id:
         raise ValueError("Cannot submit change from for non-registered group")
     driver: ChromeDriver = chrome_session(
@@ -39,7 +39,12 @@ def execute_physical_group_change(group_data: GroupData):
     fill_physical_group_change_participants(driver, group_data)
     fill_physical_group_change_public_phone(driver, group_data)
     fill_physical_group_change_details(driver, group_data)
-    pass
+    if group_data.has_cma():
+        fill_physical_group_change_cma(driver, group_data)
+    if group_data.has_gr():
+        fill_physical_group_change_gr(driver, group_data)
+    submit_physical_group_change(driver, submitter_data)
+    driver.close()
 
 
 def fill_physical_group_change_header(driver: ChromeDriver, group_data: GroupData):
@@ -73,7 +78,7 @@ def fill_physical_group_change_status(driver: ChromeDriver, _group_data: GroupDa
     next_button.click()
 
 
-def fill_physical_group_change_summary(driver: ChromeDriver, _group_data: GroupData):
+def fill_physical_group_change_summary(driver: ChromeDriver, group_data: GroupData):
     next_button = driverWait(driver, FRAME_FILL_TIMEOUT_SECS).until(
         ec.presence_of_element_located((By.ID, "form-pagebreak-next_19"))
     )
@@ -87,8 +92,10 @@ def fill_physical_group_change_summary(driver: ChromeDriver, _group_data: GroupD
     participant_change.click()
     contact_change.click()
     details_change.click()
-    cma_change.click()
-    gr_change.click()
+    if group_data.has_cma():
+        cma_change.click()
+    if group_data.has_gr():
+        gr_change.click()
     next_button.click()
 
 
@@ -175,4 +182,86 @@ def fill_physical_group_change_details(driver: ChromeDriver, group_data: GroupDa
             By.XPATH, f"//input[@type='checkbox' and @value='{wso_option}']"
         )
         checkbox.click()
+    location_instructions = driver.find_element(By.ID, "input_39")
+    location_instructions.send_keys(group_data.wso_location())
     next_button.click()
+
+
+def fill_physical_group_change_cma(driver: ChromeDriver, group_data: GroupData):
+    next_button = driverWait(driver, FRAME_FILL_TIMEOUT_SECS).until(
+        ec.presence_of_element_located((By.ID, "form-pagebreak-next_64"))
+    )
+    first_name = driver.find_element(By.ID, "first_66")
+    first_name.send_keys(group_data.cma_first_name)
+    last_name = driver.find_element(By.ID, "last_66")
+    last_name.send_keys(group_data.cma_last_name)
+    street_address_1 = driver.find_element(By.ID, "input_67_addr_line1")
+    street_address_1.send_keys(group_data.cma_street_address_1)
+    street_address_2 = driver.find_element(By.ID, "input_67_addr_line2")
+    street_address_2.send_keys(group_data.cma_street_address_2)
+    city = driver.find_element(By.ID, "input_84")
+    city.send_keys(group_data.cma_city)
+    state = driver.find_element(By.ID, "input_85")
+    state.send_keys(group_data.cma_state)
+    zip_field = driver.find_element(By.ID, "input_86")
+    zip_field.send_keys(group_data.cma_zip)
+    country = driver.find_element(By.ID, "input_87")
+    country.send_keys(group_data.wso_cma_country())
+    area, number = group_data.wso_cma_phone()
+    phone_area = driver.find_element(By.ID, "input_68_area")
+    phone_area.send_keys(area)
+    phone_number = driver.find_element(By.ID, "input_68_phone")
+    phone_number.send_keys(number)
+    email = driver.find_element(By.ID, "input_69")
+    email.send_keys(group_data.cma_email)
+    next_button.click()
+
+
+def fill_physical_group_change_gr(driver: ChromeDriver, group_data: GroupData):
+    next_button = driverWait(driver, FRAME_FILL_TIMEOUT_SECS).until(
+        ec.presence_of_element_located((By.ID, "form-pagebreak-next_148"))
+    )
+    first_name = driver.find_element(By.ID, "first_74")
+    first_name.send_keys(group_data.gr_first_name)
+    last_name = driver.find_element(By.ID, "last_74")
+    last_name.send_keys(group_data.gr_last_name)
+    street_address_1 = driver.find_element(By.ID, "input_73_addr_line1")
+    street_address_1.send_keys(group_data.gr_street_address_1)
+    street_address_2 = driver.find_element(By.ID, "input_73_addr_line2")
+    street_address_2.send_keys(group_data.gr_street_address_2)
+    city = driver.find_element(By.ID, "input_88")
+    city.send_keys(group_data.gr_city)
+    state = driver.find_element(By.ID, "input_89")
+    state.send_keys(group_data.gr_state)
+    zip_field = driver.find_element(By.ID, "input_90")
+    zip_field.send_keys(group_data.gr_zip)
+    country = driver.find_element(By.ID, "input_91")
+    country.send_keys(group_data.wso_gr_country())
+    area, number = group_data.wso_gr_phone()
+    phone_area = driver.find_element(By.ID, "input_72_area")
+    phone_area.send_keys(area)
+    phone_number = driver.find_element(By.ID, "input_72_phone")
+    phone_number.send_keys(number)
+    email = driver.find_element(By.ID, "input_71")
+    email.send_keys(group_data.gr_email)
+    comments = driver.find_element(By.ID, "input_95")
+    comments.send_keys(group_data.gr_comment)
+    next_button.click()
+
+
+def submit_physical_group_change(driver: ChromeDriver, submitter_data: SubmitterData):
+    submit_button = driverWait(driver, FRAME_FILL_TIMEOUT_SECS).until(
+        ec.presence_of_element_located((By.ID, "input_2"))
+    )
+    submitted_by = driver.find_element(By.ID, "input_43")
+    submitted_by.send_keys(submitter_data.name)
+    submit_date = driver.find_element(By.ID, "lite_mode_44")
+    submit_date.send_keys(datetime.today().strftime("%m-%d-%Y"))
+    area, number = submitter_data.wso_phone()
+    phone_area = driver.find_element(By.ID, "input_45_area")
+    phone_area.send_keys(area)
+    phone_number = driver.find_element(By.ID, "input_45_phone")
+    phone_number.send_keys(number)
+    email = driver.find_element(By.ID, "input_46")
+    email.send_keys(submitter_data.email)
+    submit_button.click()
