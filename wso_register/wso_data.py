@@ -44,10 +44,10 @@ class GroupData:
     location_instructions: str = ""
 
     # online meetings
-    online_location: str | None = None
+    online_platform: str | None = None
     online_url: str | None = None
-    online_zoom_id: str | None = None
-    online_zoom_password: str | None = None
+    online_meeting_id: str | None = None
+    online_meeting_password: str | None = None
 
     # public information
     language: str | None = None
@@ -83,11 +83,11 @@ class GroupData:
 
     def meeting_type(self) -> str:
         if not self.physical_location:
-            return "Online-only"
-        elif not self.online_location:
-            return "Physical-only"
+            return "Online only"
+        elif not self.online_platform:
+            return "In-person only"
         else:
-            return "Hybrid"
+            return "both In-person and Online"
 
     def wso_language(self, is_restricted: bool = True) -> str:
         if not self.language:

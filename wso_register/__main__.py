@@ -1,5 +1,8 @@
 from .wso_data import GroupData, SubmitterData
-from .physical_group import execute_physical_group_change
+from .physical_group import (
+    execute_physical_group_change,
+    execute_temporary_virtual_group_change,
+)
 
 SUBMITTER_DATA = SubmitterData(name="Dan B (D26 Web Admin)", phone="510-926-0499")
 TUESDAY_GROUP_DATA = GroupData(
@@ -13,6 +16,8 @@ TUESDAY_GROUP_DATA = GroupData(
     repeat_type="weekly",
     repeat_index=0,
     public_email="al.anon.group.645@gmail.com",
+    online_platform="Zoom",
 )
 
-execute_physical_group_change(SUBMITTER_DATA, TUESDAY_GROUP_DATA)
+# execute_physical_group_change(SUBMITTER_DATA, TUESDAY_GROUP_DATA)
+execute_temporary_virtual_group_change(SUBMITTER_DATA, TUESDAY_GROUP_DATA)
